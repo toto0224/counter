@@ -21,33 +21,9 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             border: 1px solid #333;
         }
-        
-        /* タブ切り替えボタン */
-        .tab-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            font-size: 16px;
-            font-weight: bold;
-            padding: 12px;
-            background-color: #333;
-            color: #aaa;
-            border: 2px solid #555;
-            border-radius: 8px;
-            cursor: pointer;
-            touch-action: manipulation;
-        }
-        .tab-btn.active {
-            background-color: #ffca28;
-            color: #000;
-            border-color: #ffca28;
-        }
-
         h1 { font-size: 18px; color: #ffca28; text-align: center; margin-top: 5px; margin-bottom: 15px; border-bottom: 2px solid #ffca28; padding-bottom: 5px; }
         
+        /* グループごとの枠 */
         .group-box {
             background: #252525;
             border-radius: 8px;
@@ -62,6 +38,7 @@
             margin-bottom: 8px;
         }
 
+        /* 各実の行スタイル */
         .fruit-row {
             display: flex;
             align-items: center;
@@ -85,6 +62,7 @@
             text-align: center;
         }
 
+        /* 押しやすいボタン */
         .btn-control {
             font-size: 16px;
             font-weight: bold;
@@ -98,6 +76,7 @@
         .btn-minus { background-color: #cf6679; color: #fff; }
         .btn-plus { background-color: #00e676; color: #000; margin-left: 5px; }
         
+        /* リセットボタン */
         .btn-reset {
             width: 100%;
             font-size: 14px;
@@ -114,12 +93,7 @@
 <body>
 
 <div class="container">
-    <div class="tab-container">
-        <button id="tab1" class="tab-btn active" onclick="switchTab(1)">1枠目 (メイン)</button>
-        <button id="tab2" class="tab-btn" onclick="switchTab(2)">2枠目 (サブ)</button>
-    </div>
-
-    <h1 id="current-title">わくわくの実 所持数 (1枠目)</h1>
+    <h1>わくわくの実 所持数カウンター</h1>
     
     <!-- 同族グループ -->
     <div class="group-box">
@@ -190,7 +164,7 @@
         </div>
     </div>
 
-    <!-- その他グループ（速必殺・ケガ減りを追加して白色統一） -->
+    <!-- その他グループ -->
     <div class="group-box" style="border-left-color: #9c27b0;">
         <div class="group-title" style="color: #9c27b0;">その他</div>
         <div class="fruit-row">
@@ -198,18 +172,6 @@
             <button class="btn-control btn-minus" onclick="changeCount('yugeki', -1)">-</button>
             <div id="yugeki" class="count-display">0</div>
             <button class="btn-control btn-plus" onclick="changeCount('yugeki', 1)">+</button>
-        </div>
-        <div class="fruit-row">
-            <div class="fruit-name">速必殺</div>
-            <button class="btn-control btn-minus" onclick="changeCount('sokuhissatsu', -1)">-</button>
-            <div id="sokuhissatsu" class="count-display">0</div>
-            <button class="btn-control btn-plus" onclick="changeCount('sokuhissatsu', 1)">+</button>
-        </div>
-        <div class="fruit-row">
-            <div class="fruit-name">ケガ減り</div>
-            <button class="btn-control btn-minus" onclick="changeCount('kegaheri', -1)">-</button>
-            <div id="kegaheri" class="count-display">0</div>
-            <button class="btn-control btn-plus" onclick="changeCount('kegaheri', 1)">+</button>
         </div>
         <div class="fruit-row">
             <div class="fruit-name">将命削り</div>
@@ -225,23 +187,69 @@
         </div>
     </div>
 
-    <!-- 選択中の枠のみリセット -->
-    <button class="btn-reset" onclick="handleReset()">現在の枠のカウントをリセット</button>
+    <!-- 全リセットボタン -->
+    <button class="btn-reset" onclick="handleReset()">すべてのカウントをリセット</button>
 </div>
 
 <script>
-    // 今回は最初からバグのないキーに設定してあります
-    const STORAGE_KEY = 'monst_fruit_tabbed_white_perfect_today';
+    // わくわくの実の在庫データ専用の保存キー
+    const STORAGE_KEY = 'monst_fruit_stock_data';
 
-    let currentSlot = 1;
+    // 12項目のデータ初期値
+    let data = {
+        douzoku_kageki: 0, douzoku_kameigeki: 0, douzoku_kagekisoku: 0,
+        gekishu_kageki: 0, gekishu_kameigeki: 0, gekishu_kagekisoku: 0,
+        senkei_kageki: 0,  senkei_kameigeki: 0,  senkei_kagekisoku: 0,
+        yugeki: 0, shoumei: 0, heimei: 0
+    };
 
-    let allData = {
-        slot1: {
-            douzoku_kageki: 0, douzoku_kameigeki: 0, douzoku_kagekisoku: 0,
-            gekishu_kageki: 0, gekishu_kameigeki: 0, gekishu_kagekisoku: 0,
-            senkei_kageki: 0,  senkei_kameigeki: 0,  senkei_kagekisoku: 0,
-            yugeki: 0, sokuhissatsu: 0, kegaheri: 0, shoumei: 0, heimei: 0
-        },
-        slot2: {
-            douzoku_kageki: 0, douzoku_kameigeki: 0, douzoku_kagekisoku: 0,
-            gekishu_kageki: 0, gekishu_kameigeki: 0, gekishu_kagekisoku: 0,
+    // 保存データの読み込み
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        try {
+            data = JSON.parse(savedData);
+        } catch(e) {
+            console.error("データ読み込みエラー", e);
+        }
+    }
+
+    // 表示をまとめて更新する関数
+    function updateDisplay() {
+        for (let key in data) {
+            let element = document.getElementById(key);
+            if (element) {
+                element.innerText = data[key];
+            }
+        }
+    }
+
+    // データを保存する関数
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // ボタンを押したときにカウントを増減する関数
+    function changeCount(key, value) {
+        data[key] += value;
+        if (data[key] < 0) data[key] = 0; // 0未満にはしない
+        saveData();
+        updateDisplay();
+    }
+
+    // リセット関数
+    function handleReset() {
+        if (confirm("すべての実のカウントを0に戻しますか？")) {
+            for (let key in data) {
+                data[key] = 0;
+            }
+            saveData();
+            updateDisplay();
+        }
+    }
+
+    // ページ読み込み時に表示を初期化
+    updateDisplay();
+</script>
+
+</body>
+</html>
