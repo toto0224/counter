@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モンスト キャラ別厳選マネージャー</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 10px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 10px auto;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+        h1 { font-size: 18px; color: #ffca28; text-align: center; margin-top: 5px; margin-bottom: 15px; border-bottom: 2px solid #ffca28; padding-bottom: 5px; }
+        .add-box {
+            background: #252525;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .slot-select-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #333;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #555;
+            font-size: 13px;
+        }
+        .slot-select-container label { cursor: pointer; }
+        .btn-add {
+            width: 100%;
+            background-color: #00e676;
+            color: #000;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .search-box { margin-bottom: 15px; }
+        .char-card {
+            background: #252525;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ffca28;
+            position: relative;
+        }
+        .char-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ffca28;
+            padding-right: 40px;
+        }
+        .slots-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 5px;
+        }
+        .fruit-slot {
+            background: #333;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-align: center;
+            border: 1px solid #444;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .btn-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #cf6679;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>キャラ別厳選マネージャー</h1>
+    <div class="add-box">
+        <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
+        <div class="slot-select-container">
+            <span>実の枠数：</span>
+            <label><input type="radio" name="slotCount" value="2" onchange="toggleSlotVisibility(2)"> 2枠</label>
+            <label><input type="radio" name="slotCount" value="3" checked onchange="toggleSlotVisibility(3)"> 3枠</label>
+            <label><input type="radio" name="slotCount" value="4" onchange="toggleSlotVisibility(4)"> 4枠</label>
+        </div>
+        <div class="slots-container" style="margin-bottom: 8px;">
+            <select id="slot1"><option value="未厳選">1個目の実</option></select>
+            <select id="slot2"><option value="未厳選">2個目の実</option></select>
+            <select id="slot3"><option value="未厳選">3個目の実</option></select>
+            <select id="slot4" style="display: none;"><option value="未厳選">4個目の実</option></select>
+        </div>
+        <button class="btn-add" onclick="addCharacter()">キャラをリストに追加</button>
+    </div>
+    <div class="search-box">
+        <input type="text" id="searchBar" placeholder="🔍 キャラ名で絞り込み..." oninput="renderList()">
+    </div>
+    <div id="characterList"></div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'monst_char_manager_perfect_v1';
+    const fruitOptions = [
+        "同族加撃", "同族加命撃", "同族加撃速",
+        "撃種加撃", "撃種加命撃", "撃種加撃速",
+        "戦型加撃", "戦型加命撃", "戦型加撃速",
+        "熱き友撃", "速必殺", "ケガ減り", "将命削り", "兵命削り"
+    ];
+
+    function initSelects() {
+        const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
+        slots.forEach(slotId => {
+            const select = document.getElementById(slotId);
+            fruitOptions.forEach(fruit => {
+                const opt = document.createElement('option');
+                opt.value = fruit; opt.innerText = fruit;
+                select.appendChild(opt);
+            });
+        });
+    }
+
+    function toggleSlotVisibility(count) {
+        document.getElementById('slot3').style.display = count >= 3 ? 'block' : 'none';
+        document.getElementById('slot4').style.display = count >= 4 ? 'block' : 'none';
+    }
+
+    let charList = [];
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+        try { charList = JSON.parse(savedData); } catch(e) { console.error(e); }
+    }
+
+    function addCharacter() {
+        const nameInput = document.getElementById('charName');
+        const name = nameInput.value.trim();
+        if (!name) { alert('キャラ名を入力してください！'); return; }
+        const selectedCount = parseInt(document.querySelector('input[name="slotCount"]:checked').value);
+        const charData = {
+            id: Date.now(), name: name, slotCount: selectedCount,
+            s1: document.getElementById('slot1').value,
+            s2: document.getElementById('slot2').value,
+            s3: selectedCount >= 3 ? document.getElementById('slot3').value : '---',
+            s4: selectedCount >= 4 ? document.getElementById('slot4').value : '---'
+        };
+        charList.push(charData);
+        saveAndRender();
+        nameInput.value = '';
+        document.getElementById('slot1').value = '未厳選';
+        document.getElementById('slot2').value = '未厳選';
+        document.getElementById('slot3').value = '未厳選';
+        document.getElementById('slot4').value = '未厳選';
+        document.querySelector('input[name="slotCount"][value="3"]').checked = true;
+        toggleSlotVisibility(3);
+    }
+
+    function deleteCharacter(id) {
+        if (confirm('このキャラの記録を削除しますか？')) {
+            charList = charList.filter(char => char.id !== id);
+            saveAndRender();
+        }
+    }
+
+    function saveAndRender() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(charList));
+        renderList();
+    }
+
+    function renderList() {
+        const container = document.getElementById('characterList');
+        container.innerHTML = '';
+        const searchText = document.getElementById('searchBar').value.toLowerCase();
+        const filteredList = charList.filter(char => char.name.toLowerCase().includes(searchText));
+        filteredList.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'char-card';
+            let slotsHtml = `
+                <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' ? '#00e676' : '#888'}">${char.s1}</div>
+                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' ? '#00e676' : '#888'}">${char.s2}</div>
+            `;
+            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' ? '#00e676' : '#888'}">${char.s3}</div>`; }
+            if (char.slotCount >= 4) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s4 !== '未厳選' ? '#00e676' : '#888'}">${char.s4}</div>`; }
+            card.innerHTML = `
+                <div class="char-name">${char.name}</div>
+                <button class="btn-delete" onclick="deleteCharacter(${char.id})">削除</button>
+                <div class="slots-container">${slotsHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+    initSelects();
+    renderList();
+</script>
+
+</body>
+</html>
