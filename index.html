@@ -40,7 +40,6 @@
             cursor: pointer;
             touch-action: manipulation;
         }
-        /* 現在選ばれているタブのスタイル */
         .tab-btn.active {
             background-color: #ffca28;
             color: #000;
@@ -76,11 +75,6 @@
             font-size: 15px;
             flex-grow: 1;
             text-align: left;
-        }
-        
-        .highlight-fruit {
-            color: #ffd54f; 
-            font-weight: bold;
         }
         
         .count-display {
@@ -120,7 +114,6 @@
 <body>
 
 <div class="container">
-    <!-- 枠切り替えタブ -->
     <div class="tab-container">
         <button id="tab1" class="tab-btn active" onclick="switchTab(1)">1枠目 (メイン)</button>
         <button id="tab2" class="tab-btn" onclick="switchTab(2)">2枠目 (サブ)</button>
@@ -207,13 +200,13 @@
             <button class="btn-control btn-plus" onclick="changeCount('yugeki', 1)">+</button>
         </div>
         <div class="fruit-row">
-            <div class="fruit-name highlight-fruit">速必殺</div>
+            <div class="fruit-name">速必殺</div>
             <button class="btn-control btn-minus" onclick="changeCount('sokuhissatsu', -1)">-</button>
             <div id="sokuhissatsu" class="count-display">0</div>
             <button class="btn-control btn-plus" onclick="changeCount('sokuhissatsu', 1)">+</button>
         </div>
         <div class="fruit-row">
-            <div class="fruit-name highlight-fruit">ケガ減り</div>
+            <div class="fruit-name">ケガ減り</div>
             <button class="btn-control btn-minus" onclick="changeCount('kegaheri', -1)">-</button>
             <div id="kegaheri" class="count-display">0</div>
             <button class="btn-control btn-plus" onclick="changeCount('kegaheri', 1)">+</button>
@@ -237,16 +230,17 @@
 </div>
 
 <script>
-    // タブ切り替え用の保存キー
-    const STORAGE_KEY = 'monst_fruit_tabbed_data_v1';
+    const STORAGE_KEY = 'monst_fruit_tabbed_white_v2';
 
-    // 現在表示している枠の番号（最初は1枠目）
     let currentSlot = 1;
 
-    // 1枠目と2枠目のデータをそれぞれ独立して用意
     let allData = {
         slot1: {
             douzoku_kageki: 0, douzoku_kameigeki: 0, douzoku_kagekisoku: 0,
             gekishu_kageki: 0, gekishu_kameigeki: 0, gekishu_kagekisoku: 0,
             senkei_kageki: 0,  senkei_kameigeki: 0,  senkei_kagekisoku: 0,
             yugeki: 0, sokuhissatsu: 0, kegaheri: 0, shoumei: 0, heimei: 0
+        },
+        slot2: {
+            douzoku_kageki: 0, douzoku_kameigeki: 0, douzoku_kagekisoku: 0,
+            gekishu_kageki: 0, gekishu_kameigeki: 0, gekishu_kagekisoku: 0,
