@@ -3,122 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>モンスト EXカウンター風ツール</title>
+    <title>モンスト わくわくの実カウンター</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            text-align: center;
             background-color: #121212;
             color: #ffffff;
             margin: 0;
             padding: 10px;
         }
         .container {
-            max-width: 450px;
-            margin: 20px auto;
+            max-width: 480px;
+            margin: 10px auto;
             background: #1e1e1e;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             border: 1px solid #333;
         }
-        h1 { font-size: 20px; color: #ffca28; margin-bottom: 20px; border-bottom: 2px solid #ffca28; padding-bottom: 5px; }
+        h1 { font-size: 18px; color: #ffca28; text-align: center; margin-top: 5px; margin-bottom: 15px; border-bottom: 2px solid #ffca28; padding-bottom: 5px; }
         
-        .status-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        .status-table td {
+        /* グループごとの枠 */
+        .group-box {
+            background: #252525;
+            border-radius: 8px;
             padding: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ffb300;
+        }
+        .group-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffca28;
+            margin-bottom: 8px;
+        }
+
+        /* 各実の行スタイル */
+        .fruit-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
             border-bottom: 1px solid #333;
+        }
+        .fruit-row:last-child { border-bottom: none; }
+        
+        .fruit-name {
+            font-size: 15px;
+            flex-grow: 1;
             text-align: left;
         }
-        .status-table td.val {
-            text-align: right;
+        
+        .count-display {
+            font-size: 18px;
             font-weight: bold;
             color: #00e676;
-            font-size: 18px;
+            width: 50px;
+            text-align: center;
         }
-        .status-table td.highlight { color: #ff5252; }
 
-        .grid-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        button {
-            font-size: 18px;
+        /* 押しやすいボタン */
+        .btn-control {
+            font-size: 16px;
             font-weight: bold;
-            padding: 15px;
+            width: 44px;
+            height: 44px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             touch-action: manipulation;
         }
-        .btn-clear { background-color: #00e676; color: #000; }
-        .btn-encounter { background-color: #ff5252; color: #fff; }
+        .btn-minus { background-color: #cf6679; color: #fff; }
+        .btn-plus { background-color: #00e676; color: #000; margin-left: 5px; }
         
-        .sub-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        /* リセットボタン */
+        .btn-reset {
+            width: 100%;
+            font-size: 14px;
+            background-color: #333;
+            color: #aaa;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
         }
-        .btn-edit { background-color: #555; color: #fff; font-size: 14px; padding: 8px; }
-        .btn-reset { background-color: #333; color: #aaa; font-size: 14px; padding: 8px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>モンストEXカウンター</h1>
+    <h1>わくわくの実 所持数カウンター</h1>
     
-    <table class="status-table">
-        <tr>
-            <td>ハマり</td>
-            <td id="hamari" class="val highlight">0</td>
-        </tr>
-        <tr>
-            <td>ラック</td>
-            <td id="luck" class="val">0</td>
-        </tr>
-        <tr>
-            <td>遭遇数</td>
-            <td id="encounter" class="val">0</td>
-        </tr>
-        <tr>
-            <td>遭遇率</td>
-            <td id="rate" class="val">0.00%</td>
-        </tr>
-        <tr>
-            <td>総周回数</td>
-            <td id="total" class="val">0</td>
-        </tr>
-    </table>
-
-    <div class="grid-buttons">
-        <button class="btn-clear" onclick="handleClear()">周回 (+1)</button>
-        <button class="btn-encounter" onclick="handleEncounter()">遭遇 (リセット)</button>
+    <!-- 同族グループ -->
+    <div class="group-box">
+        <div class="group-title">同族の絆</div>
+        <div class="fruit-row">
+            <div class="fruit-name">同族加撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('douzoku_kageki', -1)">-</button>
+            <div id="douzoku_kageki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('douzoku_kageki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">同族加命撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('douzoku_kameigeki', -1)">-</button>
+            <div id="douzoku_kameigeki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('douzoku_kameigeki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">同族加撃速</div>
+            <button class="btn-control btn-minus" onclick="changeCount('douzoku_kagekisoku', -1)">-</button>
+            <div id="douzoku_kagekisoku" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('douzoku_kagekisoku', 1)">+</button>
+        </div>
     </div>
 
-    <div class="sub-buttons">
-        <button class="btn-edit" onclick="handleEdit()">数値を編集</button>
-        <button class="btn-reset" onclick="handleReset()">リセット</button>
+    <!-- 撃種グループ -->
+    <div class="group-box" style="border-left-color: #03a9f4;">
+        <div class="group-title" style="color: #03a9f4;">撃種の絆</div>
+        <div class="fruit-row">
+            <div class="fruit-name">撃種加撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('gekishu_kageki', -1)">-</button>
+            <div id="gekishu_kageki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('gekishu_kageki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">撃種加命撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('gekishu_kameigeki', -1)">-</button>
+            <div id="gekishu_kameigeki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('gekishu_kameigeki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">撃種加撃速</div>
+            <button class="btn-control btn-minus" onclick="changeCount('gekishu_kagekisoku', -1)">-</button>
+            <div id="gekishu_kagekisoku" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('gekishu_kagekisoku', 1)">+</button>
+        </div>
     </div>
+
+    <!-- 戦型グループ -->
+    <div class="group-box" style="border-left-color: #e91e63;">
+        <div class="group-title" style="color: #e91e63;">戦型の絆</div>
+        <div class="fruit-row">
+            <div class="fruit-name">戦型加撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('senkei_kageki', -1)">-</button>
+            <div id="senkei_kageki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('senkei_kageki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">戦型加命撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('senkei_kameigeki', -1)">-</button>
+            <div id="senkei_kameigeki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('senkei_kameigeki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">戦型加撃速</div>
+            <button class="btn-control btn-minus" onclick="changeCount('senkei_kagekisoku', -1)">-</button>
+            <div id="senkei_kagekisoku" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('senkei_kagekisoku', 1)">+</button>
+        </div>
+    </div>
+
+    <!-- その他グループ -->
+    <div class="group-box" style="border-left-color: #9c27b0;">
+        <div class="group-title" style="color: #9c27b0;">その他</div>
+        <div class="fruit-row">
+            <div class="fruit-name">熱き友撃</div>
+            <button class="btn-control btn-minus" onclick="changeCount('yugeki', -1)">-</button>
+            <div id="yugeki" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('yugeki', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">将命削り</div>
+            <button class="btn-control btn-minus" onclick="changeCount('shoumei', -1)">-</button>
+            <div id="shoumei" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('shoumei', 1)">+</button>
+        </div>
+        <div class="fruit-row">
+            <div class="fruit-name">兵命削り</div>
+            <button class="btn-control btn-minus" onclick="changeCount('heimei', -1)">-</button>
+            <div id="heimei" class="count-display">0</div>
+            <button class="btn-control btn-plus" onclick="changeCount('heimei', 1)">+</button>
+        </div>
+    </div>
+
+    <!-- 全リセットボタン -->
+    <button class="btn-reset" onclick="handleReset()">すべてのカウントをリセット</button>
 </div>
 
 <script>
-    const STORAGE_KEY = 'monst_ex_counter_data';
+    // わくわくの実の在庫データ専用の保存キー
+    const STORAGE_KEY = 'monst_fruit_stock_data';
 
+    // 12項目のデータ初期値
     let data = {
-        hamari: 0,
-        luck: 0,
-        encounter: 0,
-        total: 0
+        douzoku_kageki: 0, douzoku_kameigeki: 0, douzoku_kagekisoku: 0,
+        gekishu_kageki: 0, gekishu_kameigeki: 0, gekishu_kagekisoku: 0,
+        senkei_kageki: 0,  senkei_kameigeki: 0,  senkei_kagekisoku: 0,
+        yugeki: 0, shoumei: 0, heimei: 0
     };
 
+    // 保存データの読み込み
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
         try {
@@ -128,57 +213,41 @@
         }
     }
 
-    // 前回のミスを修正（リresetになっていたボタン文字のバグもついでに直しました）
+    // 表示をまとめて更新する関数
     function updateDisplay() {
-        document.getElementById('hamari').innerText = data.hamari;
-        document.getElementById('luck').innerText = data.luck;
-        document.getElementById('encounter').innerText = data.encounter;
-        document.getElementById('total').innerText = data.total;
-
-        if (data.total > 0) {
-            let rate = (data.encounter / data.total) * 100;
-            document.getElementById('rate').innerText = rate.toFixed(2) + '%';
-        } else {
-            document.getElementById('rate').innerText = '0.00%';
+        for (let key in data) {
+            let element = document.getElementById(key);
+            if (element) {
+                element.innerText = data[key];
+            }
         }
     }
 
+    // データを保存する関数
     function saveData() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    function handleClear() {
-        data.hamari += 1;
-        data.total += 1;
+    // ボタンを押したときにカウントを増減する関数
+    function changeCount(key, value) {
+        data[key] += value;
+        if (data[key] < 0) data[key] = 0; // 0未満にはしない
         saveData();
         updateDisplay();
     }
 
-    function handleEncounter() {
-        data.encounter += 1;
-        data.luck += 1;
-        data.hamari = 0;
-        saveData();
-        updateDisplay();
-    }
-
-    function handleEdit() {
-        let newLuck = prompt("現在のラックを入力してください:", data.luck);
-        if (newLuck !== null) {
-            data.luck = parseInt(newLuck) || 0;
-            saveData();
-            updateDisplay();
-        }
-    }
-
+    // リセット関数
     function handleReset() {
-        if (confirm("すべてのデータをリセットしますか？")) {
-            data = { hamari: 0, luck: 0, encounter: 0, total: 0 };
+        if (confirm("すべての実のカウントを0に戻しますか？")) {
+            for (let key in data) {
+                data[key] = 0;
+            }
             saveData();
             updateDisplay();
         }
     }
 
+    // ページ読み込み時に表示を初期化
     updateDisplay();
 </script>
 
