@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>モンスト キャラ別厳選マネージャー</title>
-    <!-- 新しいアイコン用(icon2.png)の設定もあらかじめ入れてあります -->
-    <link rel="apple-touch-icon" href="icon2.png">
+    <link rel="apple-touch-icon" href="icon.png">
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -52,7 +51,7 @@
             margin-bottom: 8px;
             border: 1px solid #555;
             font-size: 13px;
-            flex-wrap: wrap; /* スマホでボタンがはみ出さないように対策 */
+            flex-wrap: wrap;
             gap: 5px;
         }
         .select-container label { cursor: pointer; }
@@ -68,8 +67,6 @@
             font-size: 15px;
         }
         .search-box { margin-bottom: 15px; }
-        
-        /* キャラリストカード基本 */
         .char-card {
             background: #252525;
             border-radius: 8px;
@@ -78,13 +75,10 @@
             border-left: 4px solid #ffca28;
             position: relative;
         }
-        
-        /* 4アカウント別の左線色分け */
-        .char-card.acc-main { border-left-color: #2196f3; } /* 本垢:青 */
-        .char-card.acc-sub1 { border-left-color: #ff9800; } /* サブ1:オレンジ */
-        .char-card.acc-sub2 { border-left-color: #4caf50; } /* サブ2:緑 */
-        .char-card.acc-sub3 { border-left-color: #9c27b0; } /* サブ3:紫 */
-
+        .char-card.acc-main { border-left-color: #2196f3; }
+        .char-card.acc-sub1 { border-left-color: #ff9800; }
+        .char-card.acc-sub2 { border-left-color: #4caf50; }
+        .char-card.acc-sub3 { border-left-color: #9c27b0; }
         .char-header {
             display: flex;
             align-items: center;
@@ -96,8 +90,6 @@
             font-weight: bold;
             color: #ffffff;
         }
-        
-        /* 4アカウント別のバッジ色分け */
         .account-badge {
             font-size: 11px;
             font-weight: bold;
@@ -110,7 +102,6 @@
         .bg-sub1 { background-color: #ff9800; }
         .bg-sub2 { background-color: #4caf50; }
         .bg-sub3 { background-color: #9c27b0; }
-
         .slots-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -147,8 +138,6 @@
     <h1>キャラ別厳選マネージャー</h1>
     <div class="add-box">
         <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
-        
-        <!-- アカウント選択を4つのラジオボタンに拡張 -->
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
@@ -156,7 +145,6 @@
             <label><input type="radio" name="accountType" value="サブ2"> サブ2</label>
             <label><input type="radio" name="accountType" value="サブ3"> サブ3</label>
         </div>
-        
         <div class="select-container">
             <span>実の枠数：</span>
             <label><input type="radio" name="slotCount" value="2" onchange="toggleSlotVisibility(2)"> 2枠</label>
@@ -178,8 +166,8 @@
 </div>
 
 <script>
-    // 保存データが混ざらないように4垢専用のキーに新しく更新
-    const STORAGE_KEY = 'monst_char_manager_4accounts_v1';
+    // バグデータを一掃するため保存キーを変更
+    const STORAGE_KEY = 'monst_char_manager_4accounts_fixed_v1';
     const fruitOptions = [
         "同族加撃", "同族加命撃", "同族加撃速",
         "撃種加撃", "撃種加命撃", "撃種加撃速",
@@ -254,15 +242,15 @@
         const filteredList = charList.filter(char => char.name.toLowerCase().includes(searchText));
         filteredList.forEach(char => {
             const card = document.createElement('div');
-            
-            // 4つのアカウントに応じたデザイン分けの設定
             let accClass = 'acc-main';
             let badgeClass = 'bg-main';
             if (char.account === 'サブ1') { accClass = 'acc-sub1'; badgeClass = 'bg-sub1'; }
             else if (char.account === 'サブ2') { accClass = 'acc-sub2'; badgeClass = 'bg-sub2'; }
             else if (char.account === 'サブ3') { accClass = 'acc-sub3'; badgeClass = 'bg-sub3'; }
-
             card.className = `char-card ${accClass}`;
-            
             let slotsHtml = `
                 <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' ? '#00e676' : '#888'}">${char.s1}</div>
+                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' ? '#00e676' : '#888'}">${char.s2}</div>
+            `;
+            // ここでバグっていた変数名のミスを完全に修正しました
+            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' ? '#00e676' : '#888'}">${char.s3}</div>`; }
