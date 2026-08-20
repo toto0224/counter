@@ -73,8 +73,10 @@
             border-left: 4px solid #ffca28;
             position: relative;
         }
-        .char-card.main-account { border-left-color: #2196f3; }
-        .char-card.sub-account { border-left-color: #ff9800; }
+        .char-card.acc-main { border-left-color: #2196f3; }
+        .char-card.acc-sub1 { border-left-color: #ff9800; }
+        .char-card.acc-sub2 { border-left-color: #4caf50; }
+        .char-card.acc-sub3 { border-left-color: #9c27b0; }
         .char-header {
             display: flex;
             align-items: center;
@@ -92,9 +94,12 @@
             padding: 2px 6px;
             border-radius: 4px;
             margin-left: 10px;
+            color: white;
         }
-        .badge-main { background-color: #2196f3; color: white; }
-        .badge-sub { background-color: #ff9800; color: white; }
+        .bg-main { background-color: #2196f3; }
+        .bg-sub1 { background-color: #ff9800; }
+        .bg-sub2 { background-color: #4caf50; }
+        .bg-sub3 { background-color: #9c27b0; }
         .slots-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -134,7 +139,9 @@
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
-            <label><input type="radio" name="accountType" value="サブ垢"> サブ垢</label>
+            <label><input type="radio" name="accountType" value="サブ1"> サブ1</label>
+            <label><input type="radio" name="accountType" value="サブ2"> サブ2</label>
+            <label><input type="radio" name="accountType" value="サブ3"> サブ3</label>
         </div>
         <div class="select-container">
             <span>実の枠数：</span>
@@ -157,8 +164,7 @@
 </div>
 
 <script>
-    // 保存データが壊れないよう別キーに避難
-    const STORAGE_KEY = 'monst_char_manager_accounts_v2';
+    const STORAGE_KEY = 'monst_char_manager_4accounts_fixed_v1';
     const fruitOptions = [
         "同族加撃", "同族加命撃", "同族加撃速",
         "撃種加撃", "撃種加命撃", "撃種加撃速",
@@ -170,7 +176,6 @@
         const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
         slots.forEach(slotId => {
             const select = document.getElementById(slotId);
-            // 選択肢のバグを修正、ここから綺麗にループで追加します
             fruitOptions.forEach(fruit => {
                 const opt = document.createElement('option');
                 opt.value = fruit; opt.innerText = fruit;
@@ -234,9 +239,12 @@
         const filteredList = charList.filter(char => char.name.toLowerCase().includes(searchText));
         filteredList.forEach(char => {
             const card = document.createElement('div');
-            const accountClass = char.account === '本垢' ? 'main-account' : 'sub-account';
-            card.className = `char-card ${accountClass}`;
-            const badgeClass = char.account === '本垢' ? 'badge-main' : 'badge-sub';
+            let accClass = 'acc-main';
+            let badgeClass = 'bg-main';
+            if (char.account === 'サブ1') { accClass = 'acc-sub1'; badgeClass = 'bg-sub1'; }
+            else if (char.account === 'サブ2') { accClass = 'acc-sub2'; badgeClass = 'bg-sub2'; }
+            else if (char.account === 'サブ3') { accClass = 'acc-sub3'; badgeClass = 'bg-sub3'; }
+            card.className = `char-card ${accClass}`;
             let slotsHtml = `
                 <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' ? '#00e676' : '#888'}">${char.s1}</div>
                 <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' ? '#00e676' : '#888'}">${char.s2}</div>
@@ -245,18 +253,3 @@
             if (char.slotCount >= 4) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s4 !== '未厳選' ? '#00e676' : '#888'}">${char.s4}</div>`; }
             card.innerHTML = `
                 <div class="char-header">
-                    <div class="char-name">${char.name}</div>
-                    <span class="account-badge ${badgeClass}">${char.account}</span>
-                </div>
-                <button class="btn-delete" onclick="deleteCharacter(${char.id})">削除</button>
-                <div class="slots-container">${slotsHtml}</div>
-            `;
-            container.appendChild(card);
-        });
-    }
-    initSelects();
-    renderList();
-</script>
-
-</body>
-</html>
