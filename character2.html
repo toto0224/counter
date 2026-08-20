@@ -51,8 +51,6 @@
             margin-bottom: 8px;
             border: 1px solid #555;
             font-size: 13px;
-            flex-wrap: wrap;
-            gap: 5px;
         }
         .select-container label { cursor: pointer; }
         .btn-add {
@@ -75,15 +73,14 @@
             border-left: 4px solid #ffca28;
             position: relative;
         }
-        .char-card.acc-main { border-left-color: #2196f3; }
-        .char-card.acc-sub1 { border-left-color: #ff9800; }
-        .char-card.acc-sub2 { border-left-color: #4caf50; }
-        .char-card.acc-sub3 { border-left-color: #9c27b0; }
+        /* 2垢用の色分け設定 */
+        .char-card.main-account { border-left-color: #2196f3; } /* 本垢は青 */
+        .char-card.sub-account { border-left-color: #ff9800; }  /* サブ垢はオレンジ */
         .char-header {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            padding-right: 90px; /* ボタンが重ならないように広げました */
+            padding-right: 90px;
         }
         .char-name {
             font-size: 16px;
@@ -98,10 +95,8 @@
             margin-left: 10px;
             color: white;
         }
-        .bg-main { background-color: #2196f3; }
-        .bg-sub1 { background-color: #ff9800; }
-        .bg-sub2 { background-color: #4caf50; }
-        .bg-sub3 { background-color: #9c27b0; }
+        .badge-main { background-color: #2196f3; }
+        .badge-sub { background-color: #ff9800; }
         .slots-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -118,8 +113,6 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        
-        /* 操作用ミニボタン */
         .action-buttons {
             position: absolute;
             top: 10px;
@@ -135,8 +128,8 @@
             font-size: 11px;
             color: white;
         }
-        .btn-edit { background: #0288d1; }  /* 編集は青色 */
-        .btn-delete { background: #cf6679; }/* 削除はピンク赤 */
+        .btn-edit { background: #0288d1; }
+        .btn-delete { background: #cf6679; }
     </style>
 </head>
 <body>
@@ -145,13 +138,14 @@
     <h1>キャラ別厳選マネージャー</h1>
     <div class="add-box">
         <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
+        
+        <!-- 2垢選択（本垢・サブ垢） -->
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
-            <label><input type="radio" name="accountType" value="サブ1"> サブ1</label>
-            <label><input type="radio" name="accountType" value="サブ2"> サブ2</label>
-            <label><input type="radio" name="accountType" value="サブ3"> サブ3</label>
+            <label><input type="radio" name="accountType" value="サブ垢"> サブ垢</label>
         </div>
+        
         <div class="select-container">
             <span>実の枠数：</span>
             <label><input type="radio" name="slotCount" value="2" onchange="toggleSlotVisibility(2)"> 2枠</label>
@@ -173,7 +167,8 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'monst_char_manager_4accounts_fixed_v1';
+    // 過去の多垢データと干渉しないよう、2垢専用のキーにしています
+    const STORAGE_KEY = 'monst_char_manager_2accounts_fixed_v1';
     const fruitOptions = [
         "同族加撃", "同族加命撃", "同族加撃速",
         "撃種加撃", "撃種加命撃", "撃種加撃速",
@@ -181,13 +176,12 @@
         "熱き友撃", "速必殺", "ケガ減り", "将命削り", "兵命削り"
     ];
 
-    let editId = null; // 現在編集中のキャラのIDを記憶する変数
+    let editId = null;
 
     function initSelects() {
         const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
         slots.forEach(slotId => {
             const select = document.getElementById(slotId);
-            // 既存の選択肢を一度クリアして重複を防ぐ
             select.innerHTML = '<option value="未厳選">未厳選</option>';
             fruitOptions.forEach(fruit => {
                 const opt = document.createElement('option');
@@ -208,7 +202,6 @@
         try { charList = JSON.parse(savedData); } catch(e) { console.error(e); }
     }
 
-    // 追加および編集後の確定処理
     function addCharacter() {
         const nameInput = document.getElementById('charName');
         const name = nameInput.value.trim();
@@ -222,7 +215,6 @@
         const fruit4 = selectedCount >= 4 ? document.getElementById('slot4').value : '---';
 
         if (editId !== null) {
-            // 【編集モード】既存のデータを上書き
             const charIndex = charList.findIndex(char => char.id === editId);
             if (charIndex !== null && charIndex !== -1) {
                 charList[charIndex].name = name;
@@ -233,11 +225,10 @@
                 charList[charIndex].s3 = fruit3;
                 charList[charIndex].s4 = fruit4;
             }
-            editId = null; // 編集終了
+            editId = null;
             document.getElementById('submitBtn').innerText = 'キャラをリストに追加';
             document.getElementById('submitBtn').style.backgroundColor = '#00e676';
         } else {
-            // 【通常モード】新しく追加
             const charData = {
                 id: Date.now(), name: name, account: account, slotCount: selectedCount,
                 s1: fruit1, s2: fruit2, s3: fruit3, s4: fruit4
@@ -247,7 +238,6 @@
 
         saveAndRender();
         
-        // フォームのリセット
         nameInput.value = '';
         document.getElementById('slot1').value = '未厳選';
         document.getElementById('slot2').value = '未厳選';
@@ -258,12 +248,21 @@
         toggleSlotVisibility(3);
     }
 
-    // 編集ボタンを押した時の処理（上の入力フォームにデータを呼び出す）
     function editCharacter(id) {
-        const char = charList.find(c => char.id === id || c.id === id);
+        const char = charList.find(c => c.id === id);
         if (!char) return;
 
-        editId = char.id; // 編集中のIDセット
+        editId = char.id;
         
-        // データを上の入力欄に戻す
         document.getElementById('charName').value = char.name;
+        document.querySelector(`input[name="accountType"][value="${char.account}"]`).checked = true;
+        document.querySelector(`input[name="slotCount"][value="${char.slotCount}"]`).checked = true;
+        
+        toggleSlotVisibility(char.slotCount);
+        
+        document.getElementById('slot1').value = char.s1;
+        document.getElementById('slot2').value = char.s2;
+        if(char.slotCount >= 3) document.getElementById('slot3').value = char.s3;
+        if(char.slotCount >= 4) document.getElementById('slot4').value = char.s4;
+
+        document.getElementById('submitBtn').innerText = '編集内容を確定する';
