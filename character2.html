@@ -73,14 +73,13 @@
             border-left: 4px solid #ffca28;
             position: relative;
         }
-        /* 2垢用の色分け設定 */
-        .char-card.main-account { border-left-color: #2196f3; } /* 本垢は青 */
-        .char-card.sub-account { border-left-color: #ff9800; }  /* サブ垢はオレンジ */
+        .char-card.main-account { border-left-color: #2196f3; }
+        .char-card.sub-account { border-left-color: #ff9800; }
         .char-header {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            padding-right: 90px;
+            padding-right: 40px;
         }
         .char-name {
             font-size: 16px;
@@ -93,10 +92,9 @@
             padding: 2px 6px;
             border-radius: 4px;
             margin-left: 10px;
-            color: white;
         }
-        .badge-main { background-color: #2196f3; }
-        .badge-sub { background-color: #ff9800; }
+        .badge-main { background-color: #2196f3; color: white; }
+        .badge-sub { background-color: #ff9800; color: white; }
         .slots-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -113,23 +111,18 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .action-buttons {
+        .btn-delete {
             position: absolute;
             top: 10px;
             right: 10px;
-            display: flex;
-            gap: 5px;
-        }
-        .btn-mini {
+            background: #cf6679;
+            color: white;
             border: none;
             border-radius: 4px;
             padding: 4px 8px;
             cursor: pointer;
             font-size: 11px;
-            color: white;
         }
-        .btn-edit { background: #0288d1; }
-        .btn-delete { background: #cf6679; }
     </style>
 </head>
 <body>
@@ -138,14 +131,11 @@
     <h1>キャラ別厳選マネージャー</h1>
     <div class="add-box">
         <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
-        
-        <!-- 2垢選択（本垢・サブ垢） -->
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
             <label><input type="radio" name="accountType" value="サブ垢"> サブ垢</label>
         </div>
-        
         <div class="select-container">
             <span>実の枠数：</span>
             <label><input type="radio" name="slotCount" value="2" onchange="toggleSlotVisibility(2)"> 2枠</label>
@@ -158,7 +148,7 @@
             <select id="slot3"><option value="未厳選">3個目の実</option></select>
             <select id="slot4" style="display: none;"><option value="未厳選">4個目の実</option></select>
         </div>
-        <button class="btn-add" id="submitBtn" onclick="addCharacter()">キャラをリストに追加</button>
+        <button class="btn-add" onclick="addCharacter()">キャラをリストに追加</button>
     </div>
     <div class="search-box">
         <input type="text" id="searchBar" placeholder="🔍 キャラ名で絞り込み..." oninput="renderList()">
@@ -167,8 +157,8 @@
 </div>
 
 <script>
-    // 過去の多垢データと干渉しないよう、2垢専用のキーにしています
-    const STORAGE_KEY = 'monst_char_manager_2accounts_fixed_v1';
+    // 保存データが壊れないよう別キーに避難
+    const STORAGE_KEY = 'monst_char_manager_accounts_v2';
     const fruitOptions = [
         "同族加撃", "同族加命撃", "同族加撃速",
         "撃種加撃", "撃種加命撃", "撃種加撃速",
@@ -176,13 +166,11 @@
         "熱き友撃", "速必殺", "ケガ減り", "将命削り", "兵命削り"
     ];
 
-    let editId = null;
-
     function initSelects() {
         const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
         slots.forEach(slotId => {
             const select = document.getElementById(slotId);
-            select.innerHTML = '<option value="未厳選">未厳選</option>';
+            // 選択肢のバグを修正、ここから綺麗にループで追加します
             fruitOptions.forEach(fruit => {
                 const opt = document.createElement('option');
                 opt.value = fruit; opt.innerText = fruit;
@@ -208,36 +196,15 @@
         if (!name) { alert('キャラ名を入力してください！'); return; }
         const selectedCount = parseInt(document.querySelector('input[name="slotCount"]:checked').value);
         const account = document.querySelector('input[name="accountType"]:checked').value;
-        
-        const fruit1 = document.getElementById('slot1').value;
-        const fruit2 = document.getElementById('slot2').value;
-        const fruit3 = selectedCount >= 3 ? document.getElementById('slot3').value : '---';
-        const fruit4 = selectedCount >= 4 ? document.getElementById('slot4').value : '---';
-
-        if (editId !== null) {
-            const charIndex = charList.findIndex(char => char.id === editId);
-            if (charIndex !== null && charIndex !== -1) {
-                charList[charIndex].name = name;
-                charList[charIndex].account = account;
-                charList[charIndex].slotCount = selectedCount;
-                charList[charIndex].s1 = fruit1;
-                charList[charIndex].s2 = fruit2;
-                charList[charIndex].s3 = fruit3;
-                charList[charIndex].s4 = fruit4;
-            }
-            editId = null;
-            document.getElementById('submitBtn').innerText = 'キャラをリストに追加';
-            document.getElementById('submitBtn').style.backgroundColor = '#00e676';
-        } else {
-            const charData = {
-                id: Date.now(), name: name, account: account, slotCount: selectedCount,
-                s1: fruit1, s2: fruit2, s3: fruit3, s4: fruit4
-            };
-            charList.push(charData);
-        }
-
+        const charData = {
+            id: Date.now(), name: name, account: account, slotCount: selectedCount,
+            s1: document.getElementById('slot1').value,
+            s2: document.getElementById('slot2').value,
+            s3: selectedCount >= 3 ? document.getElementById('slot3').value : '---',
+            s4: selectedCount >= 4 ? document.getElementById('slot4').value : '---'
+        };
+        charList.push(charData);
         saveAndRender();
-        
         nameInput.value = '';
         document.getElementById('slot1').value = '未厳選';
         document.getElementById('slot2').value = '未厳選';
@@ -248,21 +215,48 @@
         toggleSlotVisibility(3);
     }
 
-    function editCharacter(id) {
-        const char = charList.find(c => c.id === id);
-        if (!char) return;
+    function deleteCharacter(id) {
+        if (confirm('このキャラの記録を削除しますか？')) {
+            charList = charList.filter(char => char.id !== id);
+            saveAndRender();
+        }
+    }
 
-        editId = char.id;
-        
-        document.getElementById('charName').value = char.name;
-        document.querySelector(`input[name="accountType"][value="${char.account}"]`).checked = true;
-        document.querySelector(`input[name="slotCount"][value="${char.slotCount}"]`).checked = true;
-        
-        toggleSlotVisibility(char.slotCount);
-        
-        document.getElementById('slot1').value = char.s1;
-        document.getElementById('slot2').value = char.s2;
-        if(char.slotCount >= 3) document.getElementById('slot3').value = char.s3;
-        if(char.slotCount >= 4) document.getElementById('slot4').value = char.s4;
+    function saveAndRender() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(charList));
+        renderList();
+    }
 
-        document.getElementById('submitBtn').innerText = '編集内容を確定する';
+    function renderList() {
+        const container = document.getElementById('characterList');
+        container.innerHTML = '';
+        const searchText = document.getElementById('searchBar').value.toLowerCase();
+        const filteredList = charList.filter(char => char.name.toLowerCase().includes(searchText));
+        filteredList.forEach(char => {
+            const card = document.createElement('div');
+            const accountClass = char.account === '本垢' ? 'main-account' : 'sub-account';
+            card.className = `char-card ${accountClass}`;
+            const badgeClass = char.account === '本垢' ? 'badge-main' : 'badge-sub';
+            let slotsHtml = `
+                <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' ? '#00e676' : '#888'}">${char.s1}</div>
+                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' ? '#00e676' : '#888'}">${char.s2}</div>
+            `;
+            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' ? '#00e676' : '#888'}">${char.s3}</div>`; }
+            if (char.slotCount >= 4) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s4 !== '未厳選' ? '#00e676' : '#888'}">${char.s4}</div>`; }
+            card.innerHTML = `
+                <div class="char-header">
+                    <div class="char-name">${char.name}</div>
+                    <span class="account-badge ${badgeClass}">${char.account}</span>
+                </div>
+                <button class="btn-delete" onclick="deleteCharacter(${char.id})">削除</button>
+                <div class="slots-container">${slotsHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+    initSelects();
+    renderList();
+</script>
+
+</body>
+</html>
