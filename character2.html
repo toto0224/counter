@@ -83,7 +83,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            padding-right: 40px;
+            padding-right: 90px; /* ボタンが重ならないように広げました */
         }
         .char-name {
             font-size: 16px;
@@ -118,18 +118,25 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .btn-delete {
+        
+        /* 操作用ミニボタン */
+        .action-buttons {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #cf6679;
-            color: white;
+            display: flex;
+            gap: 5px;
+        }
+        .btn-mini {
             border: none;
             border-radius: 4px;
             padding: 4px 8px;
             cursor: pointer;
             font-size: 11px;
+            color: white;
         }
+        .btn-edit { background: #0288d1; }  /* 編集は青色 */
+        .btn-delete { background: #cf6679; }/* 削除はピンク赤 */
     </style>
 </head>
 <body>
@@ -157,7 +164,7 @@
             <select id="slot3"><option value="未厳選">3個目の実</option></select>
             <select id="slot4" style="display: none;"><option value="未厳選">4個目の実</option></select>
         </div>
-        <button class="btn-add" onclick="addCharacter()">キャラをリストに追加</button>
+        <button class="btn-add" id="submitBtn" onclick="addCharacter()">キャラをリストに追加</button>
     </div>
     <div class="search-box">
         <input type="text" id="searchBar" placeholder="🔍 キャラ名で絞り込み..." oninput="renderList()">
@@ -166,7 +173,6 @@
 </div>
 
 <script>
-    // バグデータを一掃するため保存キーを変更
     const STORAGE_KEY = 'monst_char_manager_4accounts_fixed_v1';
     const fruitOptions = [
         "同族加撃", "同族加命撃", "同族加撃速",
@@ -175,10 +181,14 @@
         "熱き友撃", "速必殺", "ケガ減り", "将命削り", "兵命削り"
     ];
 
+    let editId = null; // 現在編集中のキャラのIDを記憶する変数
+
     function initSelects() {
         const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
         slots.forEach(slotId => {
             const select = document.getElementById(slotId);
+            // 既存の選択肢を一度クリアして重複を防ぐ
+            select.innerHTML = '<option value="未厳選">未厳選</option>';
             fruitOptions.forEach(fruit => {
                 const opt = document.createElement('option');
                 opt.value = fruit; opt.innerText = fruit;
@@ -198,21 +208,46 @@
         try { charList = JSON.parse(savedData); } catch(e) { console.error(e); }
     }
 
+    // 追加および編集後の確定処理
     function addCharacter() {
         const nameInput = document.getElementById('charName');
         const name = nameInput.value.trim();
         if (!name) { alert('キャラ名を入力してください！'); return; }
         const selectedCount = parseInt(document.querySelector('input[name="slotCount"]:checked').value);
         const account = document.querySelector('input[name="accountType"]:checked').value;
-        const charData = {
-            id: Date.now(), name: name, account: account, slotCount: selectedCount,
-            s1: document.getElementById('slot1').value,
-            s2: document.getElementById('slot2').value,
-            s3: selectedCount >= 3 ? document.getElementById('slot3').value : '---',
-            s4: selectedCount >= 4 ? document.getElementById('slot4').value : '---'
-        };
-        charList.push(charData);
+        
+        const fruit1 = document.getElementById('slot1').value;
+        const fruit2 = document.getElementById('slot2').value;
+        const fruit3 = selectedCount >= 3 ? document.getElementById('slot3').value : '---';
+        const fruit4 = selectedCount >= 4 ? document.getElementById('slot4').value : '---';
+
+        if (editId !== null) {
+            // 【編集モード】既存のデータを上書き
+            const charIndex = charList.findIndex(char => char.id === editId);
+            if (charIndex !== null && charIndex !== -1) {
+                charList[charIndex].name = name;
+                charList[charIndex].account = account;
+                charList[charIndex].slotCount = selectedCount;
+                charList[charIndex].s1 = fruit1;
+                charList[charIndex].s2 = fruit2;
+                charList[charIndex].s3 = fruit3;
+                charList[charIndex].s4 = fruit4;
+            }
+            editId = null; // 編集終了
+            document.getElementById('submitBtn').innerText = 'キャラをリストに追加';
+            document.getElementById('submitBtn').style.backgroundColor = '#00e676';
+        } else {
+            // 【通常モード】新しく追加
+            const charData = {
+                id: Date.now(), name: name, account: account, slotCount: selectedCount,
+                s1: fruit1, s2: fruit2, s3: fruit3, s4: fruit4
+            };
+            charList.push(charData);
+        }
+
         saveAndRender();
+        
+        // フォームのリセット
         nameInput.value = '';
         document.getElementById('slot1').value = '未厳選';
         document.getElementById('slot2').value = '未厳選';
@@ -223,34 +258,12 @@
         toggleSlotVisibility(3);
     }
 
-    function deleteCharacter(id) {
-        if (confirm('このキャラの記録を削除しますか？')) {
-            charList = charList.filter(char => char.id !== id);
-            saveAndRender();
-        }
-    }
+    // 編集ボタンを押した時の処理（上の入力フォームにデータを呼び出す）
+    function editCharacter(id) {
+        const char = charList.find(c => char.id === id || c.id === id);
+        if (!char) return;
 
-    function saveAndRender() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(charList));
-        renderList();
-    }
-
-    function renderList() {
-        const container = document.getElementById('characterList');
-        container.innerHTML = '';
-        const searchText = document.getElementById('searchBar').value.toLowerCase();
-        const filteredList = charList.filter(char => char.name.toLowerCase().includes(searchText));
-        filteredList.forEach(char => {
-            const card = document.createElement('div');
-            let accClass = 'acc-main';
-            let badgeClass = 'bg-main';
-            if (char.account === 'サブ1') { accClass = 'acc-sub1'; badgeClass = 'bg-sub1'; }
-            else if (char.account === 'サブ2') { accClass = 'acc-sub2'; badgeClass = 'bg-sub2'; }
-            else if (char.account === 'サブ3') { accClass = 'acc-sub3'; badgeClass = 'bg-sub3'; }
-            card.className = `char-card ${accClass}`;
-            let slotsHtml = `
-                <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' ? '#00e676' : '#888'}">${char.s1}</div>
-                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' ? '#00e676' : '#888'}">${char.s2}</div>
-            `;
-            // ここでバグっていた変数名のミスを完全に修正しました
-            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' ? '#00e676' : '#888'}">${char.s3}</div>`; }
+        editId = char.id; // 編集中のIDセット
+        
+        // データを上の入力欄に戻す
+        document.getElementById('charName').value = char.name;
