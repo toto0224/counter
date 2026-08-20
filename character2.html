@@ -51,6 +51,8 @@
             margin-bottom: 8px;
             border: 1px solid #555;
             font-size: 13px;
+            flex-wrap: wrap;
+            gap: 5px;
         }
         .select-container label { cursor: pointer; }
         .btn-add {
@@ -176,6 +178,8 @@
         const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
         slots.forEach(slotId => {
             const select = document.getElementById(slotId);
+            // 選択肢の重複を防ぐリセット処理を追加
+            select.innerHTML = '<option value="未厳選">未厳選</option>';
             fruitOptions.forEach(fruit => {
                 const opt = document.createElement('option');
                 opt.value = fruit; opt.innerText = fruit;
@@ -246,10 +250,7 @@
             else if (char.account === 'サブ3') { accClass = 'acc-sub3'; badgeClass = 'bg-sub3'; }
             card.className = `char-card ${accClass}`;
             let slotsHtml = `
-                <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' ? '#00e676' : '#888'}">${char.s1}</div>
-                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' ? '#00e676' : '#888'}">${char.s2}</div>
+                <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' && char.s1 !== '---' ? '#00e676' : '#888'}">${char.s1}</div>
+                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' && char.s2 !== '---' ? '#00e676' : '#888'}">${char.s2}</div>
             `;
-            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' ? '#00e676' : '#888'}">${char.s3}</div>`; }
-            if (char.slotCount >= 4) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s4 !== '未厳選' ? '#00e676' : '#888'}">${char.s4}</div>`; }
-            card.innerHTML = `
-                <div class="char-header">
+            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' && char.s3 !== '---' ? '#00e676' : '#888'}">${char.s3}</div>`; }
