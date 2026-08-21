@@ -85,7 +85,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            padding-right: 90px; /* ボタンと文字が被らないための余白 */
+            padding-right: 90px;
         }
         .char-name {
             font-size: 16px;
@@ -122,7 +122,6 @@
             white-space: nowrap;
         }
         
-        /* 編集・削除ボタンを綺麗に並べるためのスタイル */
         .action-buttons {
             position: absolute;
             top: 10px;
@@ -138,8 +137,8 @@
             font-size: 11px;
             color: white;
         }
-        .btn-edit { background: #0288d1; }   /* 編集ボタンは青色 */
-        .btn-delete { background: #cf6679; } /* 削除ボタンは赤色 */
+        .btn-edit { background: #0288d1; }
+        .btn-delete { background: #cf6679; }
     </style>
 </head>
 <body>
@@ -170,7 +169,7 @@
                 <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
             </select>
             <select id="slot3">
-                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="オリンピック将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
             </select>
             <select id="slot4" style="display: none;">
                 <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
@@ -185,10 +184,9 @@
 </div>
 
 <script>
-    // 編集データに対応するため保存キーを最終決定版に変更
-    const STORAGE_KEY = 'monst_char_manager_4accounts_edit_v1';
+    const STORAGE_KEY = 'monst_char_manager_4accounts_edit_v2';
 
-    let editId = null; // 編集中のキャラIDを一時保存する変数
+    let editId = null;
 
     function toggleSlotVisibility(count) {
         document.getElementById('slot3').style.display = count >= 3 ? 'block' : 'none';
@@ -214,7 +212,6 @@
         const fruit4 = selectedCount >= 4 ? document.getElementById('slot4').value : '---';
 
         if (editId !== null) {
-            // 【編集モード】既存キャラのデータを書き換え
             const idx = charList.findIndex(c => c.id === editId);
             if (idx !== -1) {
                 charList[idx].name = name;
@@ -226,3 +223,7 @@
                 charList[idx].s4 = fruit4;
             }
             editId = null;
+            document.getElementById('submitBtn').innerText = 'キャラをリストに追加';
+            document.getElementById('submitBtn').style.backgroundColor = '#00e676';
+        } else {
+            const charData = {
