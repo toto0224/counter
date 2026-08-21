@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>モンスト キャラ別厳選マネージャー</title>
+    <!-- お気に入りアイコン(icon.png)の設定もバッチリ入っています -->
     <link rel="apple-touch-icon" href="icon.png">
     <style>
         body {
@@ -51,8 +52,6 @@
             margin-bottom: 8px;
             border: 1px solid #555;
             font-size: 13px;
-            flex-wrap: wrap;
-            gap: 5px;
         }
         .select-container label { cursor: pointer; }
         .btn-add {
@@ -67,6 +66,8 @@
             font-size: 15px;
         }
         .search-box { margin-bottom: 15px; }
+        
+        /* キャラリストのカード設定 */
         .char-card {
             background: #252525;
             border-radius: 8px;
@@ -75,10 +76,10 @@
             border-left: 4px solid #ffca28;
             position: relative;
         }
-        .char-card.acc-main { border-left-color: #2196f3; }
-        .char-card.acc-sub1 { border-left-color: #ff9800; }
-        .char-card.acc-sub2 { border-left-color: #4caf50; }
-        .char-card.acc-sub3 { border-left-color: #9c27b0; }
+        /* 2垢（本垢・サブ垢）に応じた左線の色分け */
+        .char-card.main-account { border-left-color: #2196f3; } /* 本垢は青 */
+        .char-card.sub-account { border-left-color: #ff9800; }  /* サブ垢はオレンジ */
+
         .char-header {
             display: flex;
             align-items: center;
@@ -90,6 +91,8 @@
             font-weight: bold;
             color: #ffffff;
         }
+        
+        /* 2垢別のバッジ色分け */
         .account-badge {
             font-size: 11px;
             font-weight: bold;
@@ -98,10 +101,9 @@
             margin-left: 10px;
             color: white;
         }
-        .bg-main { background-color: #2196f3; }
-        .bg-sub1 { background-color: #ff9800; }
-        .bg-sub2 { background-color: #4caf50; }
-        .bg-sub3 { background-color: #9c27b0; }
+        .badge-main { background-color: #2196f3; }
+        .badge-sub { background-color: #ff9800; }
+
         .slots-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
@@ -138,24 +140,35 @@
     <h1>キャラ別厳選マネージャー</h1>
     <div class="add-box">
         <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
+        
+        <!-- 2垢選択（本垢・サブ垢） -->
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
-            <label><input type="radio" name="accountType" value="サブ1"> サブ1</label>
-            <label><input type="radio" name="accountType" value="サブ2"> サブ2</label>
-            <label><input type="radio" name="accountType" value="サブ3"> サブ3</label>
+            <label><input type="radio" name="accountType" value="サブ垢"> サブ垢</label>
         </div>
+        
         <div class="select-container">
             <span>実の枠数：</span>
             <label><input type="radio" name="slotCount" value="2" onchange="toggleSlotVisibility(2)"> 2枠</label>
             <label><input type="radio" name="slotCount" value="3" checked onchange="toggleSlotVisibility(3)"> 3枠</label>
             <label><input type="radio" name="slotCount" value="4" onchange="toggleSlotVisibility(4)"> 4枠</label>
         </div>
+        
+        <!-- 絶対にフリーズしないように、14項目の実を最初からHTMLに手動で書き込みました -->
         <div class="slots-container" style="margin-bottom: 8px;">
-            <select id="slot1"><option value="未厳選">1個目の実</option></select>
-            <select id="slot2"><option value="未厳選">2個目の実</option></select>
-            <select id="slot3"><option value="未厳選">3個目の実</option></select>
-            <select id="slot4" style="display: none;"><option value="未厳選">4個目の実</option></select>
+            <select id="slot1">
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+            </select>
+            <select id="slot2">
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+            </select>
+            <select id="slot3">
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+            </select>
+            <select id="slot4" style="display: none;">
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+            </select>
         </div>
         <button class="btn-add" onclick="addCharacter()">キャラをリストに追加</button>
     </div>
@@ -166,27 +179,8 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'monst_char_manager_4accounts_fixed_v1';
-    const fruitOptions = [
-        "同族加撃", "同族加命撃", "同族加撃速",
-        "撃種加撃", "撃種加命撃", "撃種加撃速",
-        "戦型加撃", "戦型加命撃", "戦型加撃速",
-        "熱き友撃", "速必殺", "ケガ減り", "将命削り", "兵命削り"
-    ];
-
-    function initSelects() {
-        const slots = ['slot1', 'slot2', 'slot3', 'slot4'];
-        slots.forEach(slotId => {
-            const select = document.getElementById(slotId);
-            // 選択肢の重複を防ぐリセット処理を追加
-            select.innerHTML = '<option value="未厳選">未厳選</option>';
-            fruitOptions.forEach(fruit => {
-                const opt = document.createElement('option');
-                opt.value = fruit; opt.innerText = fruit;
-                select.appendChild(opt);
-            });
-        });
-    }
+    // 過去のバグデータと完全に切り離すため、新しく2垢専用のキーにしました
+    const STORAGE_KEY = 'monst_char_manager_2accounts_pure_v2';
 
     function toggleSlotVisibility(count) {
         document.getElementById('slot3').style.display = count >= 3 ? 'block' : 'none';
@@ -237,20 +231,3 @@
     }
 
     function renderList() {
-        const container = document.getElementById('characterList');
-        container.innerHTML = '';
-        const searchText = document.getElementById('searchBar').value.toLowerCase();
-        const filteredList = charList.filter(char => char.name.toLowerCase().includes(searchText));
-        filteredList.forEach(char => {
-            const card = document.createElement('div');
-            let accClass = 'acc-main';
-            let badgeClass = 'bg-main';
-            if (char.account === 'サブ1') { accClass = 'acc-sub1'; badgeClass = 'bg-sub1'; }
-            else if (char.account === 'サブ2') { accClass = 'acc-sub2'; badgeClass = 'bg-sub2'; }
-            else if (char.account === 'サブ3') { accClass = 'acc-sub3'; badgeClass = 'bg-sub3'; }
-            card.className = `char-card ${accClass}`;
-            let slotsHtml = `
-                <div class="fruit-slot" style="color: ${char.s1 !== '未厳選' && char.s1 !== '---' ? '#00e676' : '#888'}">${char.s1}</div>
-                <div class="fruit-slot" style="color: ${char.s2 !== '未厳選' && char.s2 !== '---' ? '#00e676' : '#888'}">${char.s2}</div>
-            `;
-            if (char.slotCount >= 3) { slotsHtml += `<div class="fruit-slot" style="color: ${char.s3 !== '未厳選' && char.s3 !== '---' ? '#00e676' : '#888'}">${char.s3}</div>`; }
