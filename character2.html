@@ -76,17 +76,16 @@
             position: relative;
         }
         
-        /* 4アカウント別の色分け */
-        .char-card.acc-main { border-left-color: #2196f3; } /* 本垢:青 */
-        .char-card.acc-sub1 { border-left-color: #ff9800; } /* サブ1:オレンジ */
-        .char-card.acc-sub2 { border-left-color: #4caf50; } /* サブ2:緑 */
-        .char-card.acc-sub3 { border-left-color: #9c27b0; } /* サブ3:紫 */
+        .char-card.acc-main { border-left-color: #2196f3; }
+        .char-card.acc-sub1 { border-left-color: #ff9800; }
+        .char-card.acc-sub2 { border-left-color: #4caf50; }
+        .char-card.acc-sub3 { border-left-color: #9c27b0; }
 
         .char-header {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            padding-right: 40px;
+            padding-right: 90px; /* ボタンと文字が被らないための余白 */
         }
         .char-name {
             font-size: 16px;
@@ -122,18 +121,25 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .btn-delete {
+        
+        /* 編集・削除ボタンを綺麗に並べるためのスタイル */
+        .action-buttons {
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #cf6679;
-            color: white;
+            display: flex;
+            gap: 5px;
+        }
+        .btn-mini {
             border: none;
             border-radius: 4px;
             padding: 4px 8px;
             cursor: pointer;
             font-size: 11px;
+            color: white;
         }
+        .btn-edit { background: #0288d1; }   /* 編集ボタンは青色 */
+        .btn-delete { background: #cf6679; } /* 削除ボタンは赤色 */
     </style>
 </head>
 <body>
@@ -142,8 +148,6 @@
     <h1>キャラ別厳選マネージャー</h1>
     <div class="add-box">
         <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
-        
-        <!-- 項目を4つ（本垢、サブ1、サブ2、サブ3）に増やしました -->
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
@@ -151,7 +155,6 @@
             <label><input type="radio" name="accountType" value="サブ2"> サブ2</label>
             <label><input type="radio" name="accountType" value="サブ3"> サブ3</label>
         </div>
-        
         <div class="select-container">
             <span>実の枠数：</span>
             <label><input type="radio" name="slotCount" value="2" onchange="toggleSlotVisibility(2)"> 2枠</label>
@@ -170,10 +173,10 @@
                 <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
             </select>
             <select id="slot4" style="display: none;">
-                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="...将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
             </select>
         </div>
-        <button class="btn-add" onclick="addCharacter()">キャラをリストに追加</button>
+        <button class="btn-add" id="submitBtn" onclick="addCharacter()">キャラをリストに追加</button>
     </div>
     <div class="search-box">
         <input type="text" id="searchBar" placeholder="🔍 キャラ名で絞り込み..." oninput="renderList()">
@@ -182,8 +185,10 @@
 </div>
 
 <script>
-    // 2垢データと混ざらないよう、4垢専用の保存キーに新しく切り替えました
-    const STORAGE_KEY = 'monst_char_manager_4accounts_pure_v3';
+    // 編集データに対応するため保存キーを最終決定版に変更
+    const STORAGE_KEY = 'monst_char_manager_4accounts_edit_v1';
+
+    let editId = null; // 編集中のキャラIDを一時保存する変数
 
     function toggleSlotVisibility(count) {
         document.getElementById('slot3').style.display = count >= 3 ? 'block' : 'none';
@@ -202,24 +207,22 @@
         if (!name) { alert('キャラ名を入力してください！'); return; }
         const selectedCount = parseInt(document.querySelector('input[name="slotCount"]:checked').value);
         const account = document.querySelector('input[name="accountType"]:checked').value;
-        const charData = {
-            id: Date.now(), name: name, account: account, slotCount: selectedCount,
-            s1: document.getElementById('slot1').value,
-            s2: document.getElementById('slot2').value,
-            s3: selectedCount >= 3 ? document.getElementById('slot3').value : '---',
-            s4: selectedCount >= 4 ? document.getElementById('slot4').value : '---'
-        };
-        charList.push(charData);
-        saveAndRender();
-        nameInput.value = '';
-        document.getElementById('slot1').value = '未厳選';
-        document.getElementById('slot2').value = '未厳選';
-        document.getElementById('slot3').value = '未厳選';
-        document.getElementById('slot4').value = '未厳選';
-        document.querySelector('input[name="slotCount"][value="3"]').checked = true;
-        document.querySelector('input[name="accountType"][value="本垢"]').checked = true;
-        toggleSlotVisibility(3);
-    }
+        
+        const fruit1 = document.getElementById('slot1').value;
+        const fruit2 = document.getElementById('slot2').value;
+        const fruit3 = selectedCount >= 3 ? document.getElementById('slot3').value : '---';
+        const fruit4 = selectedCount >= 4 ? document.getElementById('slot4').value : '---';
 
-    function deleteCharacter(id) {
-        if (confirm('このキャラの記録を削除しますか？')) {
+        if (editId !== null) {
+            // 【編集モード】既存キャラのデータを書き換え
+            const idx = charList.findIndex(c => c.id === editId);
+            if (idx !== -1) {
+                charList[idx].name = name;
+                charList[idx].account = account;
+                charList[idx].slotCount = selectedCount;
+                charList[idx].s1 = fruit1;
+                charList[idx].s2 = fruit2;
+                charList[idx].s3 = fruit3;
+                charList[idx].s4 = fruit4;
+            }
+            editId = null;
