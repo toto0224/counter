@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>モンスト キャラ別厳選マネージャー</title>
-    <!-- お気に入りアイコン(icon.png)の設定もバッチリ入っています -->
     <link rel="apple-touch-icon" href="icon.png">
     <style>
         body {
@@ -52,6 +51,8 @@
             margin-bottom: 8px;
             border: 1px solid #555;
             font-size: 13px;
+            flex-wrap: wrap;
+            gap: 5px;
         }
         .select-container label { cursor: pointer; }
         .btn-add {
@@ -66,8 +67,6 @@
             font-size: 15px;
         }
         .search-box { margin-bottom: 15px; }
-        
-        /* キャラリストのカード設定 */
         .char-card {
             background: #252525;
             border-radius: 8px;
@@ -76,9 +75,12 @@
             border-left: 4px solid #ffca28;
             position: relative;
         }
-        /* 2垢（本垢・サブ垢）に応じた左線の色分け */
-        .char-card.main-account { border-left-color: #2196f3; } /* 本垢は青 */
-        .char-card.sub-account { border-left-color: #ff9800; }  /* サブ垢はオレンジ */
+        
+        /* 4アカウント別の色分け */
+        .char-card.acc-main { border-left-color: #2196f3; } /* 本垢:青 */
+        .char-card.acc-sub1 { border-left-color: #ff9800; } /* サブ1:オレンジ */
+        .char-card.acc-sub2 { border-left-color: #4caf50; } /* サブ2:緑 */
+        .char-card.acc-sub3 { border-left-color: #9c27b0; } /* サブ3:紫 */
 
         .char-header {
             display: flex;
@@ -91,8 +93,6 @@
             font-weight: bold;
             color: #ffffff;
         }
-        
-        /* 2垢別のバッジ色分け */
         .account-badge {
             font-size: 11px;
             font-weight: bold;
@@ -101,8 +101,10 @@
             margin-left: 10px;
             color: white;
         }
-        .badge-main { background-color: #2196f3; }
-        .badge-sub { background-color: #ff9800; }
+        .bg-main { background-color: #2196f3; }
+        .bg-sub1 { background-color: #ff9800; }
+        .bg-sub2 { background-color: #4caf50; }
+        .bg-sub3 { background-color: #9c27b0; }
 
         .slots-container {
             display: grid;
@@ -141,11 +143,13 @@
     <div class="add-box">
         <input type="text" id="charName" placeholder="キャラクター名を入力 (例: ヤクモ)">
         
-        <!-- 2垢選択（本垢・サブ垢） -->
+        <!-- 項目を4つ（本垢、サブ1、サブ2、サブ3）に増やしました -->
         <div class="select-container">
             <span>アカウント：</span>
             <label><input type="radio" name="accountType" value="本垢" checked> 本垢</label>
-            <label><input type="radio" name="accountType" value="サブ垢"> サブ垢</label>
+            <label><input type="radio" name="accountType" value="サブ1"> サブ1</label>
+            <label><input type="radio" name="accountType" value="サブ2"> サブ2</label>
+            <label><input type="radio" name="accountType" value="サブ3"> サブ3</label>
         </div>
         
         <div class="select-container">
@@ -155,7 +159,6 @@
             <label><input type="radio" name="slotCount" value="4" onchange="toggleSlotVisibility(4)"> 4枠</label>
         </div>
         
-        <!-- 絶対にフリーズしないように、14項目の実を最初からHTMLに手動で書き込みました -->
         <div class="slots-container" style="margin-bottom: 8px;">
             <select id="slot1">
                 <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
@@ -167,7 +170,7 @@
                 <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
             </select>
             <select id="slot4" style="display: none;">
-                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
+                <option value="未厳選">未厳選</option><option value="同族加撃">同族加撃</option><option value="同族加命撃">同族加命撃</option><option value="同族加撃速">同族加撃速</option><option value="撃種加撃">撃種加撃</option><option value="撃種加命撃">撃種加命撃</option><option value="撃種加撃速">撃種加撃速</option><option value="戦型加撃">戦型加撃</option><option value="戦型加命撃">戦型加命撃</option><option value="戦型加撃速">戦型加撃速</option><option value="熱き友撃">熱き友撃</option><option value="速必殺">速必殺</option><option value="ケガ減り">ケガ減り</option><option value="...将命削り">将命削り</option><option value="兵命削り">兵命削り</option>
             </select>
         </div>
         <button class="btn-add" onclick="addCharacter()">キャラをリストに追加</button>
@@ -179,8 +182,8 @@
 </div>
 
 <script>
-    // 過去のバグデータと完全に切り離すため、新しく2垢専用のキーにしました
-    const STORAGE_KEY = 'monst_char_manager_2accounts_pure_v2';
+    // 2垢データと混ざらないよう、4垢専用の保存キーに新しく切り替えました
+    const STORAGE_KEY = 'monst_char_manager_4accounts_pure_v3';
 
     function toggleSlotVisibility(count) {
         document.getElementById('slot3').style.display = count >= 3 ? 'block' : 'none';
@@ -220,14 +223,3 @@
 
     function deleteCharacter(id) {
         if (confirm('このキャラの記録を削除しますか？')) {
-            charList = charList.filter(char => char.id !== id);
-            saveAndRender();
-        }
-    }
-
-    function saveAndRender() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(charList));
-        renderList();
-    }
-
-    function renderList() {
